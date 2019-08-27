@@ -1,0 +1,88 @@
+==================================================================
+https://keybase.io/0xf61
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://0xf61.gitlab.io
+  * I am 0xf61 (https://keybase.io/0xf61) on keybase.
+  * I have a public key with fingerprint BE83 1A4E B65A 1EDC 8BD5  9535 C504 656F 85B4 B4AD
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "012083ec4a9ba4f4694b35357d274ea621be7e5fb7b8ba8c788685f444b809406a840a",
+      "fingerprint": "be831a4eb65a1edc8bd59535c504656f85b4b4ad",
+      "host": "keybase.io",
+      "key_id": "c504656f85b4b4ad",
+      "kid": "0101601f5df0ca5126db53a15dd094aef91ec448daa7d767e295544ae191ff1d97430a",
+      "uid": "30c4d6f9ac9e019e0ae13af85de83119",
+      "username": "0xf61"
+    },
+    "merkle_root": {
+      "ctime": 1554320114,
+      "hash_meta": "826602de71357362a2acb1c142f1bcbd8b0ae5948552f8e6310a1dc3d733bde0",
+      "seqno": 5089526
+    },
+    "revoke": {
+      "sig_ids": [
+        "8650bd810ca66ba05a24cf999ebcc18707e155b933e479d0c58138a226886fd60f"
+      ]
+    },
+    "service": {
+      "hostname": "0xf61.gitlab.io",
+      "protocol": "https:"
+    },
+    "type": "web_service_binding",
+    "version": 1
+  },
+  "ctime": 1554320106,
+  "expire_in": 157680000,
+  "prev": "3977e75f6d0aa6080a7cc6e6bc06db7cbce3ba45a74bf09ade6c81e3b6889a26",
+  "seqno": 34,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+-----BEGIN PGP MESSAGE-----
+Version: Keybase OpenPGP v2.1.0
+Comment: https://keybase.io/crypto
+
+yMP5AnicbVMLbBVFFG2FGuhHsIJGEUwWsFjrY2Z3Z3b38QtESov8hGJAio+Z2dnX
+pe3b99m+B6lVrHxEhWAlUAvGImBjBLSCoILEQhFQLFKtGBSIIEhaCZ9SLCZQZ6tE
+Y9xks9m5955z7rl3GjN6JKUmH+jJnSU7dmxN/mpfvCypcHNqa7lEHXOh5C+Xinn3
+h5eYPOYGim1T8ksAykBXOFOJQYlqqdhQqYIUpJmypnKCZUi5xpFFNapTojNN17GO
+LFVVqQ4MFWCiq4BIOZJlh4I8Go7aIVfAUq4rkKicYkQgN5lOTWQIWIaAihG2dERV
+qhJTFBY5Ma9CiKMkxn22I87ET6Bb3v/k39YNIAbQQqYFGEFQxiZFCoHINIUswi0D
+iqZU3SREMzWscdlASBUBaEDLgqahqUq37rJuOAUw1cSWQZjBARSvSFSIoDW9RqDh
+JcZ4NERKuUe+wMJQqsiRSnm0uIQHoo7jes4y1/biUDApMoBQFd2RWFGglLtElOky
+xkA2uQaFvwqWiUwYhQyqsgUpo6ZOBS0yVB0h2dI5ViAg0GSKqSkKNTkQImI8EnIk
+PwK6gWQsFER53CnmHnnMDgrPYpJ/jqRjBAQcFM5gTAlARFaZZRgGp4xBXQMaFxqp
+oShc1QwTMKRDRSeyjMV0LRMDS5pb4ZFF4zbrBveG9O/mfUHbLSH0r2mFo47rMKdE
+BItcNxzze9a4C8NedoLTwN84AWqHTLEloiLOozHbCQmrROZ/XAM4R+ILwnaUB2wv
+A2lYB+LxeHjcm5WhaVxDFjYBIRjogGiMYY4pA2IJNEYZV8QuI6Kp1AIGMTlmOhRn
+ojuDyPgfGxUxIJcEBaYwL0TcsiiXKvY1FPZMSk5NujPlDu/6JKX27nv7Ur05vU/X
+WGXl0+dXTLs1cm/m1dnfwVm+glKyfHEi9Vp8QpY97cOCjKxLDZFZ7SVuh7Nr0ZoJ
+JSsHFrb4k4c0jDl4YXfB95tB18Ea0t73dfZ+70XPXCzJ3dx/+LDK+9ZNiTyV7+vx
+Q+SDoc3+xPwNx5b+PHPNWx+nzclms+Xabya+Z/GOtrd3D+73ysH8tidbX2jp8eL5
+rs79k7fOun6kT9XFxJZfin6t6ZQL3rj4/PEllp6Df7q34kz4wYkbv77x+NRz4zpq
+2rsm5+2Z9ERk8IDWWrvh5uURs5dmQGOQlRPdVjB034VEuvtZZWjRicaN265nXz20
+qVfaypS6Y482ri27eeto2Zm7erm1hwp2hpUs+VUQX9/evPdKHkg5Fno4eDl914A/
+Rq3e1e/Gqem5Mzvu/7JqfNqz80szn1uedVY9m6GOHJdW3R47Jb88ZsFjv9WNnff5
+yO3w9KT90snguTuOZPha7R9PBGfUvYOrOurnfVJUPfARE86pzKxtor+vuufTFanD
+Io2ru7YHMpftQcsSp6e2sNHr22acGp03/jjbmLg7vzC9dnTz4m/9zVWn9xzP8jUt
+ea2zemx//96TeOCU+hX1huILXjm8Kbt6SM9RI67NH/xudqWR6bxUF2m7sLMeBe2z
+KeUPJN2smXwgljuos2Nn/rJLM+oqmprWjTlcPTc8PPej8sst5wMPxcHREfCLvHR1
+7fa5G7as+hOdDACI
+=U0H6
+-----END PGP MESSAGE-----
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/0xf61
+
+==================================================================

@@ -1,0 +1,24 @@
+th, td{padding:5px}
+table{margin:auto;border-top:1px solid #666;border-bottom:1px solid #666;border-collapse:collapse}
+table,th,td{border:1px solid #ccc;padding:0.5em;border-color:grey}
+table thead th{border-bottom:1px solid #ddd}
+pre{border:1px solid #ddd;padding:1em;overflow-x:auto}
+main{hyphens:auto}
+img,iframe,video{max-width:100%;margin:0 auto 0 auto;display:block}
+html{max-width:720px;margin:auto}
+hr{color:#ddd}
+footer a{text-decoration:none}
+code{font-family:Hack, Monaco, monospace;font-size:75%;color: #ffdd57}
+code[class^='language-']{color: #ccc}
+body{background-color:#222;color:#ccc;font-family:Optima, Calibri, Arial, sans-serif;max-width:800px;margin:auto;padding:1em}
+blockquote{border-left:5px solid #ccc;padding:3px 1em 3px}
+a{color:#e4d72f;text-decoration:underline;text-decoration-style:dotted}
+a:hover{text-decoration:underline}
+.title{font-size:1.1em}
+.search{margin:auto;width:50%;padding:10px}
+.rtime{float:right}
+.menu,.article-meta,footer{text-align:center}
+.menu li{display:inline-block;padding:0.3em}
+.emoji{font-family:Apple Color Emoji,Segoe UI Emoji,NotoColorEmoji,Segoe UI Symbol,Android Emoji,EmojiSymbols}
+.baslik{text-align:center}
+#search-input{margin:auto;background-color:#ccc;width:100%;text-align:center;height:2em}

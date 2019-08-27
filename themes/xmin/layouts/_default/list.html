@@ -1,0 +1,19 @@
+{{ partial "header.html" . }}
+	{{ .Content }}
+{{if not .IsHome }}
+<h1>{{ .Title | markdownify }}</h1>
+<ul>
+		{{ range where .Data.Pages "Params.seriler" "!=" "" }}
+    <li><a href="{{ .RelPermalink }}">{{ .Title | markdownify }}</a></li>
+		{{ end }}
+</ul>
+{{ end }}
+
+{{if .IsHome }}
+<ul>
+	{{ range where .Site.RegularPages "Params.seriler" "==" "Yazılar" }}
+    <li><a href="{{ .RelPermalink }}">{{ .Title | markdownify }}</a></li> {{ end }}
+</ul>
+	{{ end }}
+
+{{ partial "footer.html" . }}

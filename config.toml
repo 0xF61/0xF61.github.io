@@ -1,0 +1,53 @@
+baseurl = "/"
+languageCode = "tr-TR"
+title = "Emir (0xF61)"
+theme = "xmin"
+googleAnalytics = "UA-135684308-2"
+disqusShortname = ""
+ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+footnotereturnlinkcontents = "↩"
+disableHugoGeneratorInject = true
+pluralizeListTitles = false
+preserveTaxonomyNames = false
+
+pygmentsCodefences = true
+pygmentsCodefencesGuessSyntax = true
+
+enableEmoji = true
+enableInlineShortcodes = true
+
+[taxonomies]
+    tags = "Etiketler"
+    categories = "Seriler"
+
+[permalinks]
+    post = "/post/:year/:month/:day/:slug/"
+    note = "/note/:year/:month/:day/:slug/"
+
+[[menu.main]]
+    name = "Ana Sayfa"
+    url = "/"
+    weight = 1
+[[menu.main]]
+    name = "Yazılar"
+    url = "/yazılar/"
+    weight = 2
+[[menu.main]]
+    name = "Etiketler"
+    url = "/etiketler/"
+    weight = 3
+[[menu.main]]
+    name = "Linkler"
+    url = "/Linkler/"
+    weight = 4
+[[menu.main]]
+    name = "Ara"
+    url = "/Ara/"
+    weight = 5
+
+[params]
+    description = "Emir'in Mekanı"
+    footer = "[Feed](/index.xml)"
+
+[outputs]
+    home = [ "HTML", "JSON" ]

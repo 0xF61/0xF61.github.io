@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.LanguageCode }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="{{ "/style.css" | relURL }}"/>
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta http-equiv="Cache-control" content="public">
+<meta name="description" content="Burada bir şey yok">
+<title>{{ .Title }} | {{ .Site.Title }}</title> {{ partial "head_custom.html" . }} </head>
+<body>
+<nav>
+<ul class="menu">| {{ range .Site.Menus.main }}
+<li><a href="{{ .URL }}">{{.Name}}</a></li> |{{ end }}
+</ul>
+<hr/>
+</nav>

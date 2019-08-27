@@ -1,0 +1,9 @@
+{{ partial "header.html" . }} <div class="article-meta">
+</div> {{if not .IsHome }} {{if ne .Params.gizle "e" }}
+    <span class="rtime">📖 {{.ReadingTime}} dakika</span>
+    <a href="..">↪ {{ .Parent.Title }}</a> {{ end }}
+    <h1 class="baslik">{{.Title}}</h1> {{ end }}
+    {{ if .Params.TOC }} {{ .TableOfContents }} {{ end }}
+<main> {{ .Content }}
+</main>
+{{ partial "footer.html" . }}
